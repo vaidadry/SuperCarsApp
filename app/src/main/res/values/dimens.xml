@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="half_padding">10dp</dimen>
+    <dimen name="list_image_height">80dp</dimen>
+    <dimen name="list_item_small_text">15sp</dimen>
+    <dimen name="list_text_item_large_text">25sp</dimen>
+    <dimen name="list_image_width">140dp</dimen>
+    <dimen name="button_corner_radius">30dp</dimen>
+    <dimen name="button_stroke_width">2dp</dimen>
+    <dimen name="list_item_divider_height">1dp</dimen>
+    <dimen name="quarter_padding">5dp</dimen>
+</resources>

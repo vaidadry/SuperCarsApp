@@ -1,0 +1,32 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorSecondaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="StyledButton" parent="Widget.AppCompat.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/rounded_button_solid</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textSize">@dimen/list_item_small_text</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="TextInputLayoutStyleSearch" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/quarter_padding</item>
+        <item name="android:layout_marginEnd">@dimen/quarter_padding</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:textSize">@dimen/list_item_small_text</item>
+        <item name="android:textColorHint">@color/Text</item>
+        <item name="boxStrokeColor">@color/colorPrimaryDark</item>
+        <item name="boxStrokeWidth">@dimen/button_stroke_width</item>
+    </style>
+
+</resources>

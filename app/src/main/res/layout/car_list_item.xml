@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/list_item_cl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/half_padding">
+
+        <ImageView
+            android:id="@+id/car_image_iv"
+            android:layout_width="@dimen/list_image_width"
+            android:layout_height="@dimen/list_image_height"
+            android:contentDescription="@string/list_item_image"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@mipmap/ic_launcher"/>
+
+        <TextView
+            android:id="@+id/model_plate_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/half_padding"
+            android:layout_marginEnd="@dimen/half_padding"
+            android:text="@string/plate_number"
+            android:textSize="@dimen/list_item_small_text"
+            app:layout_constraintEnd_toStartOf="@id/distance_from_user"
+            app:layout_constraintStart_toEndOf="@id/car_image_iv"
+            app:layout_constraintTop_toBottomOf="@id/model_title_tv"/>
+
+        <TextView
+            android:id="@+id/model_title_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/half_padding"
+            android:layout_marginEnd="@dimen/half_padding"
+            android:lines="1"
+            android:text="@string/tesla"
+            android:textSize="@dimen/list_text_item_large_text"
+            app:layout_constraintEnd_toStartOf="@id/distance_from_user"
+            app:layout_constraintStart_toEndOf="@id/car_image_iv"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/battery_percentage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/half_padding"
+            android:layout_marginEnd="@dimen/half_padding"
+            android:lines="1"
+            android:text="@string/battery_life_percentage"
+            android:textSize="@dimen/list_item_small_text"
+            app:layout_constraintEnd_toStartOf="@id/distance_from_user"
+            app:layout_constraintStart_toEndOf="@id/car_image_iv"
+            app:layout_constraintTop_toBottomOf="@id/model_plate_tv"/>
+
+        <ImageView
+            android:id="@+id/on_foot_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="1dp"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_walk"
+            app:layout_constraintBottom_toTopOf="@id/distance_from_user"
+            app:layout_constraintEnd_toEndOf="@id/distance_from_user"
+            app:layout_constraintStart_toStartOf="@id/distance_from_user"
+            />
+
+
+        <TextView
+            android:id="@+id/distance_from_user"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="@dimen/half_padding"
+            android:gravity="bottom|end"
+            android:text="@string/distance_texView_km"
+            android:textSize="@dimen/list_item_small_text"
+            app:layout_constraintBottom_toBottomOf="@id/battery_percentage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/battery_percentage" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>

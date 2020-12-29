@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">SuperCarsApp</string>
+    <string name="list_item_image">List item image</string>
+    <string name="distance_texView_km">%f km</string>
+    <string name="battery_life_percentage">%f %</string>
+    <string name="car_list_title">Car list</string>
+    <string name="filter_by_plate_number">By plate number</string>
+    <string name="by_remaining_battery">By remaining battery</string>
+    <string name="retry">Retry</string>
+    <string name="no_cars_available">No cars available</string>
+    <string name="search_by_plate_number">Search by Plate Number</string>
+    <string name="plate_number">Plate number</string>
+    <string name="tesla">Tesla</string>
+</resources>
