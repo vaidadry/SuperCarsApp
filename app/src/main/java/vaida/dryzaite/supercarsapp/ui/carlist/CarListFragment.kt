@@ -14,17 +14,18 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.tbruyelle.rxpermissions2.RxPermissions
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.car_list_fragment.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
-import pub.devrel.easypermissions.AppSettingsDialog
-import pub.devrel.easypermissions.EasyPermissions
+import timber.log.Timber
 import vaida.dryzaite.supercarsapp.R
 import vaida.dryzaite.supercarsapp.databinding.CarListFragmentBinding
-import vaida.dryzaite.supercarsapp.utils.REQUEST_CODE_LOCATION_PERMISSION
 import vaida.dryzaite.supercarsapp.utils.Status
-import vaida.dryzaite.supercarsapp.utils.TrackingUtility
 import vaida.dryzaite.supercarsapp.ui.carlist.SortDirection.ASCENDING
 import vaida.dryzaite.supercarsapp.ui.carlist.SortDirection.TITLE
 import javax.inject.Inject
@@ -34,10 +35,11 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class CarListFragment @Inject constructor(
     private val carListAdapter: CarListAdapter
-) : Fragment(), EasyPermissions.PermissionCallbacks {
+) : Fragment(){
 
     private val viewModel: CarListViewModel by viewModels()
     private lateinit var binding: CarListFragmentBinding
+    private val disposable = CompositeDisposable()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,8 +51,6 @@ class CarListFragment @Inject constructor(
         binding.viewModel = viewModel
 
         requestPermissions()
-        viewModel.startLocationUpdates()
-        viewModel.startSynchronization()
 
         return binding.root
     }
@@ -225,32 +225,24 @@ class CarListFragment @Inject constructor(
         })
     }
 
-
     private fun requestPermissions() {
-        if (TrackingUtility.hasLocationPermission(requireContext())) {
-            return
-        } else {
-            EasyPermissions.requestPermissions(
-                this,
-                getString(R.string.warning_need_to_accept_location_permissions),
-                REQUEST_CODE_LOCATION_PERMISSION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-        }
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.ACCESS_FINE_LOCATION)
+            .subscribe({ isGranted ->
+                if (isGranted) {
+                    viewModel.startLocationUpdates()
+                    viewModel.startSynchronization()
+                } else {
+                    Snackbar.make(car_list_layout, getString(R.string.warning_need_to_accept_location_permissions), Snackbar.LENGTH_LONG).show()
+                    requestPermissions()
+                }
+            }, {
+                Timber.e(it.toString())
+            }).addTo(disposable)
     }
 
-    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {}
-
-    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
-        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-            AppSettingsDialog.Builder(this).build().show()
-        } else {
-            requestPermissions()
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
+    override fun onDestroy() {
+        super.onDestroy()
+        disposable.clear()
     }
 }
