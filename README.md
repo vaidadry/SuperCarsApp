@@ -34,5 +34,7 @@ Written in Kotlin, based on latest recommendations by Google.
 
 <img width="150" src="https://user-images.githubusercontent.com/52376789/96118851-c8e21180-0ef4-11eb-8f1a-2629bbeac72d.png"> <img width="150" src="https://user-images.githubusercontent.com/52376789/96118853-ca133e80-0ef4-11eb-95ab-0aa16c780d0f.png">
 
-### Features new2
-* Tests
+### Features v.3
+* Permission handling (switched to RxPermissions)
+* Improved filtering (RxKotlin)
+* Improved formatting (ktlint.gradle)
