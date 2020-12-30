@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/colorPrimary"
-        tools:context="vaida.dryzaite.supercarsapp.ui.carlist.CarListFragment">
+        tools:context=".ui.carlist.CarListFragment">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -32,24 +32,12 @@
             android:id="@+id/filter_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:background="@color/colorPrimaryDarker"
             app:layout_constraintBottom_toTopOf="@id/car_list_rv"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar">
-
-            <androidx.appcompat.widget.SearchView
-                android:id="@+id/plate_search"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/colorPrimary"
-                android:textCursorDrawable="@null"
-                app:iconifiedByDefault="false"
-                app:queryBackground="@null"
-                android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@id/result"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
 
             <TextView
                 android:id="@+id/result"
@@ -57,29 +45,39 @@
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/list_item_small_text"
                 android:gravity="center"
-                android:text="0 / 100"
-                android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@id/battery_filter"
+                android:text="@string/battery_remaining_text_view"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/plate_search"
-                />
+                app:layout_constraintBottom_toTopOf="@id/battery_filter"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.appcompat.widget.AppCompatSeekBar
                 android:id="@+id/battery_filter"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_margin="10dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/quarter_padding"
+                android:layout_marginEnd="@dimen/quarter_padding"
                 android:min="0"
                 android:max="100"
                 android:progress="0"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/plate_search"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/plate_search" />
+                app:layout_constraintTop_toBottomOf="@id/result" />
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/plate_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:iconifiedByDefault="false"
+                app:queryHint="@string/search_by_plate_number"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/battery_filter"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.recyclerview.widget.RecyclerView

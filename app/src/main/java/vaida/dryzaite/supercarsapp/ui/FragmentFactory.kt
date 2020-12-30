@@ -2,6 +2,8 @@ package vaida.dryzaite.supercarsapp.ui
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.InternalCoroutinesApi
 import vaida.dryzaite.supercarsapp.ui.carlist.CarListAdapter
 import vaida.dryzaite.supercarsapp.ui.carlist.CarListFragment
 import javax.inject.Inject
@@ -13,6 +15,8 @@ class FragmentFactory  @Inject constructor(
     private val carListAdapter: CarListAdapter
 ): FragmentFactory() {
 
+    @ExperimentalCoroutinesApi
+    @InternalCoroutinesApi
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
         return when(className) {
             CarListFragment::class.java.name -> CarListFragment(carListAdapter)

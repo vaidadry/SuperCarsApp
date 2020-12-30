@@ -1,14 +1,20 @@
 <resources>
     <string name="app_name">SuperCarsApp</string>
     <string name="list_item_image">List item image</string>
-    <string name="distance_texView_km">%f km</string>
-    <string name="battery_life_percentage">%f %</string>
+    <string name="battery_life_percentage">%d %</string>
     <string name="car_list_title">Car list</string>
-    <string name="filter_by_plate_number">By plate number</string>
-    <string name="by_remaining_battery">By remaining battery</string>
     <string name="retry">Retry</string>
     <string name="no_cars_available">No cars available</string>
     <string name="search_by_plate_number">Search by Plate Number</string>
     <string name="plate_number">Plate number</string>
     <string name="tesla">Tesla</string>
+    <string name="sort_by_distance">Sort by distance</string>
+    <string name="unknown_error">Unknown error occurred</string>
+    <string name="battery_remaining_text_view">%d / 100</string>
+    <string name="warning_need_to_accept_location_permissions">You need to accept location permissions to use this app</string>
+    <string name="no_data_available">No data</string>
+    <string name="distance_km_placeholder">%.2f km</string>
+    <string name="distance_km_placeholder_rounded">%d km</string>
+    <string name="distance_m_placeholder">%d m</string>
+    <string name="filters">Filters</string>
 </resources>

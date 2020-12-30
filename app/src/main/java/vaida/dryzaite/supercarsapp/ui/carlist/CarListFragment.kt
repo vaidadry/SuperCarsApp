@@ -1,33 +1,43 @@
 package vaida.dryzaite.supercarsapp.ui.carlist
 
+import android.Manifest
 import android.os.Bundle
 import android.view.*
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.car_list_fragment.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.InternalCoroutinesApi
+import pub.devrel.easypermissions.AppSettingsDialog
+import pub.devrel.easypermissions.EasyPermissions
 import vaida.dryzaite.supercarsapp.R
 import vaida.dryzaite.supercarsapp.databinding.CarListFragmentBinding
+import vaida.dryzaite.supercarsapp.utils.REQUEST_CODE_LOCATION_PERMISSION
 import vaida.dryzaite.supercarsapp.utils.Status
-import java.util.Locale
+import vaida.dryzaite.supercarsapp.utils.TrackingUtility
+import vaida.dryzaite.supercarsapp.ui.carlist.SortDirection.ASCENDING
+import vaida.dryzaite.supercarsapp.ui.carlist.SortDirection.TITLE
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
+@InternalCoroutinesApi
 @AndroidEntryPoint
 class CarListFragment @Inject constructor(
     private val carListAdapter: CarListAdapter
-) : Fragment() {
+) : Fragment(), EasyPermissions.PermissionCallbacks {
 
     private val viewModel: CarListViewModel by viewModels()
     private lateinit var binding: CarListFragmentBinding
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,18 +48,21 @@ class CarListFragment @Inject constructor(
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
+        requestPermissions()
+        viewModel.startLocationUpdates()
+        viewModel.startSynchronization()
+
         return binding.root
     }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         setHasOptionsMenu(true)
 
-        viewModel.startSynchronization()
-
+        viewModel.setupCarList()
         setupRecyclerView()
+        addListDividerDecoration()
         subscribeToObservers()
 
         initFilterByPlateNumber()
@@ -59,41 +72,72 @@ class CarListFragment @Inject constructor(
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.filter_top_menu, menu)
-        binding.toolbar.overflowIcon =
-            ContextCompat.getDrawable(requireContext(), R.drawable.ic_filter)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.filter_by_plate -> {
-                hideShowSearchByPlate()
+            R.id.sort_by_distance -> {
+                viewModel.onSortMenuItemClicked()
             }
-
-            R.id.filter_by_battery -> {
-                hideShowFilterByBattery()
+            R.id.filter -> {
+                viewModel.onFilterMenuItemClicked()
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
     private fun setupRecyclerView() {
-        car_list_rv.apply {
+        binding.carListRv.apply {
             adapter = carListAdapter
             layoutManager = LinearLayoutManager(requireContext())
         }
     }
 
-    private fun subscribeToObservers() {
-
-        observeDatabase()
-        observeNetworkCallStatus()
-
-        updateRvByBatteryLevel()
-        updateRvByPlateNumber()
+    private fun addListDividerDecoration() {
+        binding.carListRv.addItemDecoration(
+            DividerItemDecoration(
+                requireContext(),
+                LinearLayoutManager.VERTICAL
+            )
+        )
     }
 
-    private fun observeDatabase() {
-        viewModel.availableCarsFromDb.observe(viewLifecycleOwner, {
+    private fun subscribeToObservers() {
+
+        observeCarList()
+        observeNetworkCallStatus()
+        observeFilterMenuClick()
+        observeSortMenuClick()
+    }
+
+    //show/hide filters, on icon clicked
+    private fun observeFilterMenuClick(){
+        viewModel.filterMenuItemClickCount.observe(viewLifecycleOwner, {
+            when (it) {
+                1 ->  binding.filterContainer.isVisible = true
+                2 -> {
+                    binding.filterContainer.isVisible = false
+                    viewModel.onFilterMenuItemClickCompleted()
+                }
+            }
+        })
+    }
+
+    // handle sort icon clicks
+    private fun observeSortMenuClick(){
+        viewModel.sortMenuItemClickCount.observe(viewLifecycleOwner, {
+            when (it) {
+                1 ->  viewModel.rearrangeCars(ASCENDING)
+                2 -> {
+                    viewModel.rearrangeCars(TITLE)
+                    viewModel.onSortMenuItemClickCompleted()
+                }
+            }
+        })
+    }
+
+    private fun observeCarList() {
+        viewModel.cars.observe(viewLifecycleOwner, {
             carListAdapter.cars = it ?: arrayListOf()
             checkForEmptyState()
         })
@@ -107,24 +151,24 @@ class CarListFragment @Inject constructor(
                 when (result.status) {
 
                     Status.SUCCESS -> {
-                        progress_bar.visibility = View.GONE
-                        retry_button.visibility = View.GONE
-                        car_list_rv.alpha = 1f
+                        binding.progressBar.isVisible = false
+                        binding.retryButton.isVisible = false
+                        binding.carListRv.alpha = 1f
                     }
                     Status.ERROR -> {
                         Snackbar.make(
                             requireActivity().rootLayout,
-                            result.message ?: "Unknown error occurred",
+                            result.message ?: getString(R.string.unknown_error),
                             Snackbar.LENGTH_LONG
                         ).show()
-                        retry_button.visibility = View.VISIBLE
-                        progress_bar.visibility = View.GONE
-                        car_list_rv.alpha = 0.5f
+                        binding.retryButton.isVisible = true
+                        binding.progressBar.isVisible = false
+                        binding.carListRv.alpha = 0.5f
                     }
                     Status.LOADING -> {
-                        retry_button.visibility = View.GONE
-                        progress_bar.visibility = View.VISIBLE
-                        car_list_rv.alpha = 1f
+                        binding.retryButton.isVisible = false
+                        binding.progressBar.isVisible = true
+                        binding.carListRv.alpha = 1f
                     }
                 }
             }
@@ -133,23 +177,7 @@ class CarListFragment @Inject constructor(
 
     //if no items, empty state text is shown
     private fun checkForEmptyState() {
-        binding.emptyState.visibility =
-            if (carListAdapter.itemCount == 0) View.VISIBLE else View.INVISIBLE
-    }
-
-    private fun hideShowSearchByPlate() {
-        binding.plateSearch.visibility =
-            if (plate_search.visibility == View.GONE) View.VISIBLE else View.GONE
-        binding.batteryFilter.visibility = View.GONE
-        binding.result.visibility = View.GONE
-    }
-
-    private fun hideShowFilterByBattery() {
-        binding.batteryFilter.visibility =
-            if (battery_filter.visibility == View.GONE) View.VISIBLE else View.GONE
-        binding.result.visibility =
-            if (result.visibility == View.GONE) View.VISIBLE else View.GONE
-        binding.plateSearch.visibility = View.GONE
+        binding.emptyState.isInvisible = carListAdapter.itemCount != 0
     }
 
     // SearchView Listener
@@ -176,13 +204,15 @@ class CarListFragment @Inject constructor(
 
     // listening to changes of slider, showing result in TV and sending data to VM
     private fun initBatteryLevelFilterListener() {
+        binding.result.text = String.format(getString(R.string.battery_remaining_text_view), 0)
         binding.batteryFilter.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(
                 seekBar: SeekBar?,
                 batteryLevel: Int,
                 fromUser: Boolean
             ) {
-                binding.result.text = String.format("%d / 100", batteryLevel)
+                binding.result.text = String.format(
+                    getString(R.string.battery_remaining_text_view), batteryLevel)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -195,33 +225,32 @@ class CarListFragment @Inject constructor(
         })
     }
 
-    // observing Slider value change, filtering DB data, updating adapter
-    private fun updateRvByBatteryLevel() {
-        viewModel.batteryLevel.observe(viewLifecycleOwner, {
 
-            viewModel.availableCarsFromDb.observe(viewLifecycleOwner, { listFromDb ->
-
-                val filteredByBatteryList = listFromDb.filter { car ->
-                    car.batteryPercentage >= viewModel.batteryLevel.value ?: 0
-                }
-                carListAdapter.cars = filteredByBatteryList
-            })
-        })
+    private fun requestPermissions() {
+        if (TrackingUtility.hasLocationPermission(requireContext())) {
+            return
+        } else {
+            EasyPermissions.requestPermissions(
+                this,
+                getString(R.string.warning_need_to_accept_location_permissions),
+                REQUEST_CODE_LOCATION_PERMISSION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        }
     }
 
-    // observing SearchView value change, filtering DB data, updating adapter
-    private fun updateRvByPlateNumber() {
-        viewModel.searchQuery.observe(viewLifecycleOwner, {
+    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {}
 
-            viewModel.availableCarsFromDb.observe(viewLifecycleOwner, { listFromDb ->
-                val filteredByPlateList = listFromDb.filter { car ->
-                    // adjusting formatting
-                    car.plateNumber.toLowerCase(Locale.ROOT)
-                        .contains(viewModel.searchQuery.value!!.toLowerCase(Locale.ROOT))
-                }
-                carListAdapter.cars = filteredByPlateList
-            })
-        })
+    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
+        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+            AppSettingsDialog.Builder(this).build().show()
+        } else {
+            requestPermissions()
+        }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
+    }
 }

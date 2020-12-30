@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.patloew.colocation.CoLocation
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -20,6 +21,7 @@ import vaida.dryzaite.supercarsapp.data.CarsDatabase
 import vaida.dryzaite.supercarsapp.network.SparkApiService
 import vaida.dryzaite.supercarsapp.repository.CarsRepository
 import vaida.dryzaite.supercarsapp.repository.CarsRepositoryInterface
+import vaida.dryzaite.supercarsapp.utils.DATABASE_NAME
 import javax.inject.Singleton
 
 @Module
@@ -33,9 +35,8 @@ object AppModule {
     ) = Room.databaseBuilder(
         context,
         CarsDatabase::class.java,
-        "cars"
+        DATABASE_NAME
     ).build()
-
 
     @Singleton
     @Provides
@@ -50,7 +51,6 @@ object AppModule {
             .add(KotlinJsonAdapterFactory())
             .build()
     }
-
 
     @Singleton
     @Provides
@@ -79,4 +79,9 @@ object AppModule {
             .error(R.drawable.ic_broken)
     )
 
+    @Singleton
+    @Provides
+    fun provideCoLocation(
+        @ApplicationContext context: Context
+    ) = CoLocation.from(context)
 }
