@@ -60,9 +60,7 @@ class CarsSyncManager @Inject constructor(
         )
     }
 
-    private fun calculateCarDistance(
-        lat1: Double?, lon1: Double?, lat2: Double, lon2: Double
-    ): Float? {
+    private fun calculateCarDistance(lat1: Double?, lon1: Double?, lat2: Double, lon2: Double): Float? {
         return if (lat1 != null && lon1 != null) {
             calculateDistance(lat1, lon1, lat2, lon2)
         } else {

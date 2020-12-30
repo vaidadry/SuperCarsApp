@@ -35,14 +35,15 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class CarListFragment @Inject constructor(
     private val carListAdapter: CarListAdapter
-) : Fragment(){
+) : Fragment() {
 
     private val viewModel: CarListViewModel by viewModels()
     private lateinit var binding: CarListFragmentBinding
     private val disposable = CompositeDisposable()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
@@ -110,11 +111,11 @@ class CarListFragment @Inject constructor(
         observeSortMenuClick()
     }
 
-    //show/hide filters, on icon clicked
-    private fun observeFilterMenuClick(){
+    // show/hide filters, on icon clicked
+    private fun observeFilterMenuClick() {
         viewModel.filterMenuItemClickCount.observe(viewLifecycleOwner, {
             when (it) {
-                1 ->  binding.filterContainer.isVisible = true
+                1 -> binding.filterContainer.isVisible = true
                 2 -> {
                     binding.filterContainer.isVisible = false
                     viewModel.onFilterMenuItemClickCompleted()
@@ -124,10 +125,10 @@ class CarListFragment @Inject constructor(
     }
 
     // handle sort icon clicks
-    private fun observeSortMenuClick(){
+    private fun observeSortMenuClick() {
         viewModel.sortMenuItemClickCount.observe(viewLifecycleOwner, {
             when (it) {
-                1 ->  viewModel.rearrangeCars(ASCENDING)
+                1 -> viewModel.rearrangeCars(ASCENDING)
                 2 -> {
                     viewModel.rearrangeCars(TITLE)
                     viewModel.onSortMenuItemClickCompleted()
@@ -143,7 +144,7 @@ class CarListFragment @Inject constructor(
         })
     }
 
-    //Ui changes based on Network status
+    // Ui changes based on Network status
     private fun observeNetworkCallStatus() {
 
         viewModel.apiCallStatus.observe(viewLifecycleOwner, {
@@ -175,7 +176,7 @@ class CarListFragment @Inject constructor(
         })
     }
 
-    //if no items, empty state text is shown
+    // if no items, empty state text is shown
     private fun checkForEmptyState() {
         binding.emptyState.isInvisible = carListAdapter.itemCount != 0
     }
@@ -184,7 +185,7 @@ class CarListFragment @Inject constructor(
     private fun initFilterByPlateNumber() {
         binding.plateSearch.setOnCloseListener(object : SearchView.OnCloseListener {
             override fun onClose(): Boolean {
-                binding.plateSearch.setQuery("", true);
+                binding.plateSearch.setQuery("", true)
                 return true
             }
         })

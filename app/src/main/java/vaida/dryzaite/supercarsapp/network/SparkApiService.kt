@@ -6,5 +6,5 @@ import retrofit2.http.GET
 interface SparkApiService {
 
     @GET("/api/mobile/public/availablecars")
-    suspend fun getAvailableCars() : Response<List<ApiCar>>
+    suspend fun getAvailableCars(): Response<List<ApiCar>>
 }

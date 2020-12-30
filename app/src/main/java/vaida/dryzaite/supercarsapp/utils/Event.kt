@@ -1,6 +1,6 @@
 package vaida.dryzaite.supercarsapp.utils
 
-//generic class - to handle one-time events, so that in case of orientation changes same action
+// generic class - to handle one-time events, so that in case of orientation changes same action
 // would not repeat itself
 
 open class Event<out T>(private val content: T) {

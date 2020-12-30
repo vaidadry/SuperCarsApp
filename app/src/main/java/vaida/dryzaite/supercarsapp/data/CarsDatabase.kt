@@ -11,5 +11,4 @@ import vaida.dryzaite.supercarsapp.model.Car
 abstract class CarsDatabase : RoomDatabase() {
 
     abstract fun carListDao(): CarListDao
-
 }

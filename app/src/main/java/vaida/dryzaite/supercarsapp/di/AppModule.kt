@@ -65,9 +65,8 @@ object AppModule {
     @Singleton
     @Provides
     fun provideCarsRepository(
-        dao: CarListDao,
+        dao: CarListDao
     ) = CarsRepository(dao) as CarsRepositoryInterface
-
 
     @Singleton
     @Provides

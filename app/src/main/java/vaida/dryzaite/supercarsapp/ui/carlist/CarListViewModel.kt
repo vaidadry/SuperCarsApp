@@ -22,7 +22,7 @@ import kotlin.concurrent.fixedRateTimer
 class CarListViewModel @ViewModelInject constructor(
     repository: CarsRepositoryInterface,
     private val carsManager: CarsSyncManager,
-    private val coLocation: CoLocation,
+    private val coLocation: CoLocation
 ) : ViewModel() {
 
     // to hold value of API data loading Status (not Event)
@@ -32,7 +32,7 @@ class CarListViewModel @ViewModelInject constructor(
     private val _apiCallStatus = MutableLiveData<Event<Resource<List<Car>?>>>()
     val apiCallStatus: LiveData<Event<Resource<List<Car>?>>> = _apiCallStatus
 
-    //to hold value of UI inputs
+    // to hold value of UI inputs
     private val _batteryLevel = MutableLiveData<Int>()
     private val _searchQuery = MutableLiveData<String>()
 
@@ -67,7 +67,6 @@ class CarListViewModel @ViewModelInject constructor(
                 }
             }
         }
-
     }
 
     fun rearrangeCars(order: SortDirection) = when (order) {
@@ -99,7 +98,7 @@ class CarListViewModel @ViewModelInject constructor(
         _filterMenuItemClickCount.value = 0
     }
 
-    //handling location updates
+    // handling location updates
     private val locationRequest = LocationRequest.create()
         .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
         .setInterval(5000)
@@ -109,8 +108,8 @@ class CarListViewModel @ViewModelInject constructor(
 
     private var locationUpdatesJob: Job? = null
 
-    @ExperimentalCoroutinesApi
     @SuppressLint("MissingPermission")
+    @ExperimentalCoroutinesApi
     @InternalCoroutinesApi
     fun startLocationUpdates() {
         locationUpdatesJob?.cancel()
@@ -125,7 +124,6 @@ class CarListViewModel @ViewModelInject constructor(
             locationUpdatesJob?.cancel()
         }
     }
-
 
     // handling sync with database
     fun startSynchronization() {

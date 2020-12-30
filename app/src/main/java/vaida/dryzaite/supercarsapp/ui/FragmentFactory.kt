@@ -11,14 +11,14 @@ import javax.inject.Inject
 // fragment factory fo all fragments - to inject necessary dependencies into fragments (just as VMFactories)
 // should be adjusted by custom fragment needs
 
-class FragmentFactory  @Inject constructor(
+class FragmentFactory @Inject constructor(
     private val carListAdapter: CarListAdapter
-): FragmentFactory() {
+) : FragmentFactory() {
 
     @ExperimentalCoroutinesApi
     @InternalCoroutinesApi
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-        return when(className) {
+        return when (className) {
             CarListFragment::class.java.name -> CarListFragment(carListAdapter)
             else -> super.instantiate(classLoader, className)
         }

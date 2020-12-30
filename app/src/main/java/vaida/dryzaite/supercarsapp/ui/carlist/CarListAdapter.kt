@@ -42,7 +42,6 @@ class CarListAdapter @Inject constructor(
         get() = differ.currentList
         set(value) = differ.submitList(value)
 
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CarListViewHolder {
         return CarListViewHolder(
             LayoutInflater.from(parent.context).inflate(
@@ -75,5 +74,4 @@ class CarListAdapter @Inject constructor(
     override fun getItemCount(): Int {
         return cars.size
     }
-
 }

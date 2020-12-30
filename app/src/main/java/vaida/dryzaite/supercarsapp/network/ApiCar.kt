@@ -65,5 +65,3 @@ data class ApiCarReservation(
     val longerExtensionPrice: Double,
     val longerExtensionMinutes: Int
 )
-
-
