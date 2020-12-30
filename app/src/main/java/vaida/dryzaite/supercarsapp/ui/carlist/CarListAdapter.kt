@@ -9,9 +9,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
 import kotlinx.android.synthetic.main.car_list_item.view.*
-import vaida.dryzaite.supercarsapp.model.Car
 import vaida.dryzaite.supercarsapp.R
+import vaida.dryzaite.supercarsapp.model.Car
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 class CarListAdapter @Inject constructor(
     private val glide: RequestManager
@@ -60,7 +61,14 @@ class CarListAdapter @Inject constructor(
             model_plate_tv.text = car.plateNumber
             model_title_tv.text = car.title
             battery_percentage.text = "${car.batteryPercentage} %"
-//            distance_from_user.text = TODO()
+            val distanceTextFormatter =
+                when (car.distance?.roundToInt()) {
+                    in 1..1000 -> context.getString(R.string.distance_m_placeholder).format(car.distance)
+                    in 1000..10000 -> context.getString(R.string.distance_km_placeholder).format(car.distance?.div(1000))
+                    in 10000..1000000000 -> context.getString(R.string.distance_km_placeholder_rounded).format(car.distance?.div(1000)?.roundToInt())
+                    else -> context.getString(R.string.no_data_available)
+                }
+            distance_from_user.text = distanceTextFormatter
         }
     }
 

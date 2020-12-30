@@ -2,11 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/filter_by_plate"
-        android:title="@string/filter_by_plate_number"
-        app:showAsAction="never"/>
+        android:id="@+id/sort_by_distance"
+        android:title="@string/sort_by_distance"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_sort"/>
     <item
-        android:id="@+id/filter_by_battery"
-        android:title="@string/by_remaining_battery"
-        app:showAsAction="never"/>
+        android:id="@+id/filter"
+        android:title="@string/filters"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_filter"/>
 </menu>

@@ -6,7 +6,7 @@ import vaida.dryzaite.supercarsapp.model.Car
 
 @Database(
     entities = [Car::class],
-    version = 1,
+    version = 3,
     exportSchema = false)
 abstract class CarsDatabase : RoomDatabase() {
 

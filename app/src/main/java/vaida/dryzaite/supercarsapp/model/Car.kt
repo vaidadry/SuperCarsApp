@@ -11,6 +11,7 @@ data class Car(
     var plateNumber: String,
     var latitude: Double,
     var longitude: Double,
+    var distance: Float? = null,
     var title: String,
     var photoUrl: String,
     var batteryPercentage: Int

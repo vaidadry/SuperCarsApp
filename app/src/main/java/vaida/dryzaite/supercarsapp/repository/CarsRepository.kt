@@ -17,8 +17,11 @@ class CarsRepository @Inject constructor(
         return carListDao.getCars()
     }
 
-
     override suspend fun clearCars() {
         carListDao.clearCars()
+    }
+
+    override fun getCarsByDistanceAsc(): LiveData<List<Car>> {
+        return carListDao.getCarsByDistanceAsc()
     }
 }

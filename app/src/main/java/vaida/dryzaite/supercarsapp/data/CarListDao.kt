@@ -16,7 +16,9 @@ interface CarListDao {
     @Query("SELECT * FROM car_list")
     fun getCars(): LiveData<List<Car>>
 
+    @Query("SELECT * FROM car_list ORDER BY distance ASC")
+    fun getCarsByDistanceAsc(): LiveData<List<Car>>
+
     @Query("DELETE FROM car_list")
     suspend fun clearCars()
-
 }

@@ -9,5 +9,7 @@ interface CarsRepositoryInterface {
 
     fun getCars(): LiveData<List<Car>>
 
+    fun getCarsByDistanceAsc(): LiveData<List<Car>>
+
     suspend fun clearCars()
 }
