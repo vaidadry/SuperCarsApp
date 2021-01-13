@@ -36,5 +36,5 @@ Written in Kotlin, based on latest recommendations by Google.
 
 ### Features v.3
 * Permission handling (switched to RxPermissions)
-* Improved filtering (RxKotlin)
+* Filtering sorting (RxKotlin)
 * Improved formatting (ktlint.gradle)
