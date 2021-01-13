@@ -6,18 +6,21 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.google.android.gms.location.LocationRequest
 import com.patloew.colocation.CoLocation
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
+import timber.log.Timber
 import vaida.dryzaite.supercarsapp.model.Car
 import vaida.dryzaite.supercarsapp.repository.CarsRepositoryInterface
-import vaida.dryzaite.supercarsapp.ui.carlist.SortDirection.ASCENDING
 import vaida.dryzaite.supercarsapp.ui.carlist.SortDirection.TITLE
+import vaida.dryzaite.supercarsapp.ui.carlist.SortDirection.ASCENDING
 import vaida.dryzaite.supercarsapp.utils.CarsSyncManager
 import vaida.dryzaite.supercarsapp.utils.Event
-import vaida.dryzaite.supercarsapp.utils.Resource
 import vaida.dryzaite.supercarsapp.utils.Status
 import java.util.*
-import kotlin.concurrent.fixedRateTimer
 
 class CarListViewModel @ViewModelInject constructor(
     repository: CarsRepositoryInterface,
@@ -25,54 +28,47 @@ class CarListViewModel @ViewModelInject constructor(
     private val coLocation: CoLocation
 ) : ViewModel() {
 
-    // to hold value of API data loading Status (not Event)
-    private val _networkDataLoadingStatus = MutableLiveData<Status>()
+    // to hold value of API data loading Status
+    private val _networkDataLoadingStatus = MutableLiveData<Event<Status>>()
+    val networkDataLoadingStatus: LiveData<Event<Status>> = _networkDataLoadingStatus
 
-    // to hold value of network Status & data retrieved
-    private val _apiCallStatus = MutableLiveData<Event<Resource<List<Car>?>>>()
-    val apiCallStatus: LiveData<Event<Resource<List<Car>?>>> = _apiCallStatus
+    private val disposable = CompositeDisposable()
 
     // to hold value of UI inputs
     private val _batteryLevel = MutableLiveData<Int>()
     private val _searchQuery = MutableLiveData<String>()
+    private val _carList = MutableLiveData<List<Car>>()
+    val carList: LiveData<List<Car>> = _carList
 
-    // Mediator data combines these two and is used in Fragment
-    private val availableCarsFromDb = repository.getCars()
-    private val availableCarsFromDbDistanceAcs = repository.getCarsByDistanceAsc()
-    val cars = MediatorLiveData<List<Car>>()
-
+    private val availableCarsFromApi = repository.getCarsFromApi()
     private var currentOrder = TITLE
 
-    fun setupCarList() {
-        cars.addSource(availableCarsFromDb) { list ->
-            if (currentOrder == TITLE) {
-                list?.let { carList ->
-                    cars.value = carList.filter { car ->
-                        car.plateNumber.toLowerCase(Locale.ROOT)
-                            .contains(_searchQuery.value ?: "") &&
-                                car.batteryPercentage >= _batteryLevel.value ?: 0
-                    }
+    fun setupCarList(location: Location?) {
+        _networkDataLoadingStatus.value = Event(Status.LOADING)
+        availableCarsFromApi
+            .map { it.map { carsManager.convertApiCarToCar(it, location) } }
+            .map { it.filter { car -> car.batteryPercentage >= _batteryLevel.value ?: 0 } }
+            .map { it.filter { car -> car.plateNumber.contains(_searchQuery.value ?: "") } }
+            .map {
+                when (currentOrder) {
+                    TITLE -> it.sortedBy { car -> car.plateNumber }
+                    ASCENDING -> it.sortedBy { car -> car.distance }
                 }
             }
-        }
-
-        cars.addSource(availableCarsFromDbDistanceAcs) { list ->
-            if (currentOrder == ASCENDING) {
-                list?.let { carList ->
-                    cars.value = carList.filter { car ->
-                        car.plateNumber.toLowerCase(Locale.ROOT)
-                            .contains(_searchQuery.value ?: "") &&
-                                car.batteryPercentage >= _batteryLevel.value ?: 0
-                    }
-                }
-            }
-        }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                _networkDataLoadingStatus.value = Event(Status.SUCCESS)
+                _carList.postValue(it)
+            }, {
+                _networkDataLoadingStatus.value = Event(Status.ERROR)
+                Timber.e("Observable failed: ${it.message} ")
+            }).addTo(disposable)
     }
 
-    fun rearrangeCars(order: SortDirection) = when (order) {
-        TITLE -> availableCarsFromDb.value?.let { cars.value = it }
-        ASCENDING -> availableCarsFromDbDistanceAcs.value?.let { cars.value = it }
-    }.also { currentOrder = order }
+    fun rearrangeCars(order: SortDirection) {
+        currentOrder = order
+    }
 
     // handling clicks on sort icon -> by title, by distance
     private val _sortMenuItemClickCount = MutableLiveData(0)
@@ -105,6 +101,7 @@ class CarListViewModel @ViewModelInject constructor(
         .setFastestInterval(5000)
 
     private val _locationUpdates: MutableLiveData<Location> = MutableLiveData()
+    val locationUpdates: LiveData<Location> = _locationUpdates
 
     private var locationUpdatesJob: Job? = null
 
@@ -124,31 +121,9 @@ class CarListViewModel @ViewModelInject constructor(
             locationUpdatesJob?.cancel()
         }
     }
-
-    // handling sync with database
-    fun startSynchronization() {
-        _apiCallStatus.value = Event(Resource.loading(null))
-        _networkDataLoadingStatus.value = Status.LOADING
-
-        fixedRateTimer(period = 5000L) {
-
-            viewModelScope.launch {
-
-                val response = carsManager.getNetworkCallStatus(_locationUpdates.value)
-
-                _apiCallStatus.value = Event(response)
-                _networkDataLoadingStatus.value = response.status
-            }
-            // cancel sync timer if connection is lost
-            if (_networkDataLoadingStatus.value == Status.ERROR) {
-                this.cancel()
-            }
-        }
-    }
-
     // restart sync
     fun onClickRetryButton() {
-        startSynchronization()
+        setupCarList(_locationUpdates.value)
     }
 
     fun updateBatteryFilterValue(batteryLevel: Int) {

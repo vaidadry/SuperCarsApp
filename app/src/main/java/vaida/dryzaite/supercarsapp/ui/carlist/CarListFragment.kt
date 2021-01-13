@@ -26,8 +26,6 @@ import timber.log.Timber
 import vaida.dryzaite.supercarsapp.R
 import vaida.dryzaite.supercarsapp.databinding.CarListFragmentBinding
 import vaida.dryzaite.supercarsapp.utils.Status
-import vaida.dryzaite.supercarsapp.ui.carlist.SortDirection.ASCENDING
-import vaida.dryzaite.supercarsapp.ui.carlist.SortDirection.TITLE
 import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
@@ -61,7 +59,6 @@ class CarListFragment @Inject constructor(
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         setHasOptionsMenu(true)
 
-        viewModel.setupCarList()
         setupRecyclerView()
         addListDividerDecoration()
         subscribeToObservers()
@@ -104,6 +101,9 @@ class CarListFragment @Inject constructor(
     }
 
     private fun subscribeToObservers() {
+        viewModel.locationUpdates.observe(viewLifecycleOwner, { location ->
+            viewModel.setupCarList(location)
+        })
 
         observeCarList()
         observeNetworkCallStatus()
@@ -128,9 +128,9 @@ class CarListFragment @Inject constructor(
     private fun observeSortMenuClick() {
         viewModel.sortMenuItemClickCount.observe(viewLifecycleOwner, {
             when (it) {
-                1 -> viewModel.rearrangeCars(ASCENDING)
+                1 -> viewModel.rearrangeCars(SortDirection.ASCENDING)
                 2 -> {
-                    viewModel.rearrangeCars(TITLE)
+                    viewModel.rearrangeCars(SortDirection.TITLE)
                     viewModel.onSortMenuItemClickCompleted()
                 }
             }
@@ -138,7 +138,7 @@ class CarListFragment @Inject constructor(
     }
 
     private fun observeCarList() {
-        viewModel.cars.observe(viewLifecycleOwner, {
+        viewModel.carList.observe(viewLifecycleOwner, {
             carListAdapter.cars = it ?: arrayListOf()
             checkForEmptyState()
         })
@@ -147,9 +147,9 @@ class CarListFragment @Inject constructor(
     // Ui changes based on Network status
     private fun observeNetworkCallStatus() {
 
-        viewModel.apiCallStatus.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { result ->
-                when (result.status) {
+        viewModel.networkDataLoadingStatus.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { status ->
+                when (status) {
 
                     Status.SUCCESS -> {
                         binding.progressBar.isVisible = false
@@ -159,7 +159,7 @@ class CarListFragment @Inject constructor(
                     Status.ERROR -> {
                         Snackbar.make(
                             requireActivity().rootLayout,
-                            result.message ?: getString(R.string.unknown_error),
+                            getString(R.string.unknown_error),
                             Snackbar.LENGTH_LONG
                         ).show()
                         binding.retryButton.isVisible = true
@@ -232,7 +232,6 @@ class CarListFragment @Inject constructor(
             .subscribe({ isGranted ->
                 if (isGranted) {
                     viewModel.startLocationUpdates()
-                    viewModel.startSynchronization()
                 } else {
                     Snackbar.make(car_list_layout, getString(R.string.warning_need_to_accept_location_permissions), Snackbar.LENGTH_LONG).show()
                     requestPermissions()

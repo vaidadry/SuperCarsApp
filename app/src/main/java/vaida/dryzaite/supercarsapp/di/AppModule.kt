@@ -1,7 +1,6 @@
 package vaida.dryzaite.supercarsapp.di
 
 import android.content.Context
-import androidx.room.Room
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.patloew.colocation.CoLocation
@@ -13,36 +12,18 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.Retrofit
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
 import vaida.dryzaite.supercarsapp.BuildConfig
 import vaida.dryzaite.supercarsapp.R
-import vaida.dryzaite.supercarsapp.data.CarListDao
-import vaida.dryzaite.supercarsapp.data.CarsDatabase
 import vaida.dryzaite.supercarsapp.network.SparkApiService
 import vaida.dryzaite.supercarsapp.repository.CarsRepository
 import vaida.dryzaite.supercarsapp.repository.CarsRepositoryInterface
-import vaida.dryzaite.supercarsapp.utils.DATABASE_NAME
 import javax.inject.Singleton
 
 @Module
 @InstallIn(ApplicationComponent::class)
 object AppModule {
-
-    @Singleton
-    @Provides
-    fun provideCarsDatabase(
-        @ApplicationContext context: Context
-    ) = Room.databaseBuilder(
-        context,
-        CarsDatabase::class.java,
-        DATABASE_NAME
-    ).build()
-
-    @Singleton
-    @Provides
-    fun provideCarListDao(
-        database: CarsDatabase
-    ) = database.carListDao()
 
     @Singleton
     @Provides
@@ -57,6 +38,7 @@ object AppModule {
     fun provideSparkApi(moshi: Moshi): SparkApiService {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .baseUrl(BuildConfig.BASE_URL)
             .build()
             .create(SparkApiService::class.java)
@@ -65,8 +47,8 @@ object AppModule {
     @Singleton
     @Provides
     fun provideCarsRepository(
-        dao: CarListDao
-    ) = CarsRepository(dao) as CarsRepositoryInterface
+        service: SparkApiService
+    ) = CarsRepository(service) as CarsRepositoryInterface
 
     @Singleton
     @Provides
